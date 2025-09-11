@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Activ - Gerenciamento de Agências</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-color), #0a58ca);
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 15px;
+            transition: transform 0.3s;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stats-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .stats-label {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+        
+        .btn-action {
+            margin: 0 3px;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .table th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+        
+        .coop-badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+        }
+        
+        .state-badge {
+            font-size: 0.7rem;
+            padding: 0.3em 0.6em;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+            border-color: #86b7fe;
+        }
+        
+        .modal-content {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .nav-pills .nav-link.active {
+            background-color: var(--primary-color);
+            border-radius: 20px;
+        }
+        
+        .nav-pills .nav-link {
+            color: var(--secondary-color);
+            border-radius: 20px;
+        }
+        
+        .footer {
+            background-color: white;
+            padding: 1rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        @media (max-width: 768px) {
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+            
+            .btn-action {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header class="app-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1><i class="fas fa-network-wired me-2"></i>App Activ</h1>
+                    <p class="mb-0">Gerenciamento de Agências e IPs</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-light" id="exportBtn">
+                            <i class="fas fa-download me-1"></i> Exportar
+                        </button>
+                        <button class="btn btn-light" id="importBtn">
+                            <i class="fas fa-upload me-1"></i> Importar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Cartões de Estatísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="card stats-card">
+                    <div class="stats-value" id="totalAgencias">0</div>
+                    <div class="stats-label">Agências Cadastradas</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card stats-card">
+                    <div class="stats-value" id="totalCooperativas">0</div>
+                    <div class="stats-label">Cooperativas</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card stats-card">
+                    <div class="stats-value" id="totalEstados">0</div>
+                    <div class="stats-label">Estados</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card stats-card">
+                    <div class="stats-value" id="valorTotal">R$ 0</div>
+                    <div class="stats-label">Valor Total</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Gerenciamento de Agências</h5>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#agenciaModal">
+                            <i class="fas fa-plus me-1"></i> Nova Agência
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="pills-agencias-tab" data-bs-toggle="pill" data-bs-target="#pills-agencias" type="button" role="tab">Agências</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pills-cooperativas-tab" data-bs-toggle="pill" data-bs-target="#pills-cooperativas" type="button" role="tab">Por Cooperativa</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pills-estados-tab" data-bs-toggle="pill" data-bs-target="#pills-estados" type="button" role="tab">Por Estado</button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="pills-tabContent">
+                            <!-- Aba de Agências -->
+                            <div class="tab-pane fade show active" id="pills-agencias" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="agenciasTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Número</th>
+                                                <th>Cooperativa</th>
+                                                <th>Agência</th>
+                                                <th>Estado</th>
+                                                <th>IP</th>
+                                                <th>Valor</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Os dados serão preenchidos via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Aba de Cooperativas -->
+                            <div class="tab-pane fade" id="pills-cooperativas" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="cooperativasTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Cooperativa</th>
+                                                <th>Quantidade</th>
+                                                <th>Valor Total</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Os dados serão preenchidos via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Aba de Estados -->
+                            <div class="tab-pane fade" id="pills-estados" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="estadosTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Estado</th>
+                                                <th>Quantidade</th>
+                                                <th>Valor Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Os dados serão preenchidos via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar/Editar Agência -->
+    <div class="modal fade" id="agenciaModal" tabindex="-1" aria-labelledby="agenciaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="agenciaModalLabel">Adicionar Agência</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="agenciaForm">
+                        <input type="hidden" id="agenciaId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="numero" class="form-label">Número</label>
+                                    <input type="number" class="form-control" id="numero" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cooperativa" class="form-label">Cooperativa</label>
+                                    <input type="number" class="form-control" id="cooperativa" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="agencia" class="form-label">Agência</label>
+                                    <input type="text" class="form-control" id="agencia" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="estado" class="form-label">Estado (UF)</label>
+                                    <select class="form-select" id="estado" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="RS">RS</option>
+                                        <option value="SC">SC</option>
+                                        <option value="MG">MG</option>
+                                        <option value="ES">ES</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="ip" class="form-label">IP</label>
+                                    <input type="text" class="form-control" id="ip">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="valor" class="form-label">Valor</label>
+                                    <input type="number" class="form-control" id="valor" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="macTotem" class="form-label">MAC Totem</label>
+                                    <input type="text" class="form-control" id="macTotem">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="macTvCaixa" class="form-label">MAC TV Caixa</label>
+                                    <input type="text" class="form-control" id="macTvCaixa">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="macTvAtm" class="form-label">MAC TV ATM</label>
+                                    <input type="text" class="form-control" id="macTvAtm">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveAgencia">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir esta agência?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="text-center text-muted">
+                <p>App Activ &copy; 2023 - Sistema de Gerenciamento de Agências</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dados iniciais (simulando os dados do Excel)
+        let agencias = [
+            { id: 1, numero: 8, cooperativa: 211, agencia: "Almirante Tamandaré - RS", estado: "RS", ip: "10.3.142.83", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 2, numero: 5, cooperativa: 211, agencia: "Carazinho - RS", estado: "RS", ip: "10.1.43.66", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 3, numero: 9, cooperativa: 211, agencia: "Carazinho Sul - RS", estado: "RS", ip: "10.3.144.50", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 4, numero: 7, cooperativa: 211, agencia: "Coqueiros do Sul - RS", estado: "RS", ip: "10.3.141.76", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 5, numero: 4, cooperativa: 211, agencia: "NMT Centro - RS", estado: "RS", ip: "10.3.135.54", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 6, numero: 10, cooperativa: 211, agencia: "NMT Oeste - RS", estado: "RS", ip: "10.1.130.118", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 7, numero: 13, cooperativa: 211, agencia: "Pouso Redondo - SC", estado: "SC", ip: "10.16.98.38", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 8, numero: 12, cooperativa: 211, agencia: "Presidente Getúlio - SC", estado: "SC", ip: "10.16.85.120", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 9, numero: 6, cooperativa: 211, agencia: "Sto Antônio do Planalto - RS", estado: "RS", ip: "10.3.140.91", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 10, numero: 14, cooperativa: 211, agencia: "Taió - SC", estado: "SC", ip: "10.16.115.21", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" }
+        ];
+
+        // Carregar dados do localStorage se disponível
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedAgencias = localStorage.getItem('agencias');
+            if (savedAgencias) {
+                agencias = JSON.parse(savedAgencias);
+            }
+            renderAgencias();
+            updateStats();
+        });
+
+        // Renderizar tabela de agências
+        function renderAgencias() {
+            const tbody = document.querySelector('#agenciasTable tbody');
+            tbody.innerHTML = '';
+            
+            agencias.forEach(agencia => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${agencia.numero}</td>
+                    <td><span class="badge bg-primary coop-badge">${agencia.cooperativa}</span></td>
+                    <td>${agencia.agencia}</td>
+                    <td><span class="badge bg-info state-badge">${agencia.estado}</span></td>
+                    <td>${agencia.ip}</td>
+                    <td>R$ ${agencia.valor.toFixed(2)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary btn-action edit-btn" data-id="${agencia.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger btn-action delete-btn" data-id="${agencia.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Adicionar event listeners para os botões de editar e excluir
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    editAgencia(id);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    showDeleteConfirm(id);
+                });
+            });
+            
+            // Atualizar as tabelas de resumo
+            renderCooperativas();
+            renderEstados();
+        }
+        
+        // Renderizar tabela de cooperativas
+        function renderCooperativas() {
+            const cooperativasMap = new Map();
+            
+            agencias.forEach(agencia => {
+                if (!cooperativasMap.has(agencia.cooperativa)) {
+                    cooperativasMap.set(agencia.cooperativa, {
+                        count: 0,
+                        total: 0
+                    });
+                }
+                
+                const data = cooperativasMap.get(agencia.cooperativa);
+                data.count++;
+                data.total += agencia.valor;
+            });
+            
+            const tbody = document.querySelector('#cooperativasTable tbody');
+            tbody.innerHTML = '';
+            
+            cooperativasMap.forEach((data, cooperativa) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="badge bg-primary coop-badge">${cooperativa}</span></td>
+                    <td>${data.count}</td>
+                    <td>R$ ${data.total.toFixed(2)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary view-coop-btn" data-coop="${cooperativa}">
+                            <i class="fas fa-eye me-1"></i> Visualizar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Adicionar event listeners para os botões de visualizar
+            document.querySelectorAll('.view-coop-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const coop = this.getAttribute('data-coop');
+                    filterByCooperativa(coop);
+                });
+            });
+        }
+        
+        // Renderizar tabela de estados
+        function renderEstados() {
+            const estadosMap = new Map();
+            
+            agencias.forEach(agencia => {
+                if (!estadosMap.has(agencia.estado)) {
+                    estadosMap.set(agencia.estado, {
+                        count: 0,
+                        total: 0
+                    });
+                }
+                
+                const data = estadosMap.get(agencia.estado);
+                data.count++;
+                data.total += agencia.valor;
+            });
+            
+            const tbody = document.querySelector('#estadosTable tbody');
+            tbody.innerHTML = '';
+            
+            estadosMap.forEach((data, estado) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="badge bg-info state-badge">${estado}</span></td>
+                    <td>${data.count}</td>
+                    <td>R$ ${data.total.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Atualizar estatísticas
+        function updateStats() {
+            document.getElementById('totalAgencias').textContent = agencias.length;
+            
+            const cooperativas = new Set(agencias.map(a => a.cooperativa));
+            document.getElementById('totalCooperativas').textContent = cooperativas.size;
+            
+            const estados = new Set(agencias.map(a => a.estado));
+            document.getElementById('totalEstados').textContent = estados.size;
+            
+            const totalValor = agencias.reduce((sum, agencia) => sum + agencia.valor, 0);
+            document.getElementById('valorTotal').textContent = `R$ ${totalValor.toFixed(2)}`;
+        }
+        
+        // Filtrar por cooperativa
+        function filterByCooperativa(cooperativa) {
+            // Mudar para a aba de agências
+            document.querySelector('#pills-agencias-tab').click();
+            
+            // Filtrar visualmente (em uma aplicação real, faríamos uma filtragem mais robusta)
+            alert(`Filtrando agências da cooperativa ${cooperativa}. Em uma aplicação real, isso filtraria a tabela.`);
+        }
+        
+        // Mostrar modal de confirmação de exclusão
+        function showDeleteConfirm(id) {
+            const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+            modal.show();
+            
+            document.getElementById('confirmDelete').onclick = function() {
+                deleteAgencia(id);
+                modal.hide();
+            };
+        }
+        
+        // Excluir agência
+        function deleteAgencia(id) {
+            agencias = agencias.filter(agencia => agencia.id !== id);
+            localStorage.setItem('agencias', JSON.stringify(agencias));
+            renderAgencias();
+            updateStats();
+        }
+        
+        // Editar agência
+        function editAgencia(id) {
+            const agencia = agencias.find(a => a.id === id);
+            if (agencia) {
+                document.getElementById('agenciaId').value = agencia.id;
+                document.getElementById('numero').value = agencia.numero;
+                document.getElementById('cooperativa').value = agencia.cooperativa;
+                document.getElementById('agencia').value = agencia.agencia;
+                document.getElementById('estado').value = agencia.estado;
+                document.getElementById('ip').value = agencia.ip;
+                document.getElementById('valor').value = agencia.valor;
+                document.getElementById('macTotem').value = agencia.macTotem;
+                document.getElementById('macTvCaixa').value = agencia.macTvCaixa;
+                document.getElementById('macTvAtm').value = agencia.macTvAtm;
+                
+                document.getElementById('agenciaModalLabel').textContent = 'Editar Agência';
+                
+                const modal = new bootstrap.Modal(document.getElementById('agenciaModal'));
+                modal.show();
+            }
+        }
+        
+        // Salvar agência (nova ou editada)
+        document.getElementById('saveAgencia').addEventListener('click', function() {
+            const id = document.getElementById('agenciaId').value;
+            const numero = document.getElementById('numero').value;
+            const cooperativa = document.getElementById('cooperativa').value;
+            const agencia = document.getElementById('agencia').value;
+            const estado = document.getElementById('estado').value;
+            const ip = document.getElementById('ip').value;
+            const valor = parseFloat(document.getElementById('valor').value) || 0;
+            const macTotem = document.getElementById('macTotem').value;
+            const macTvCaixa = document.getElementById('macTvCaixa').value;
+            const macTvAtm = document.getElementById('macTvAtm').value;
+            
+            if (id) {
+                // Editar agência existente
+                const index = agencias.findIndex(a => a.id === parseInt(id));
+                if (index !== -1) {
+                    agencias[index] = {
+                        ...agencias[index],
+                        numero: parseInt(numero),
+                        cooperativa: parseInt(cooperativa),
+                        agencia,
+                        estado,
+                        ip,
+                        valor,
+                        macTotem,
+                        macTvCaixa,
+                        macTvAtm
+                    };
+                }
+            } else {
+                // Adicionar nova agência
+                const newId = agencias.length > 0 ? Math.max(...agencias.map(a => a.id)) + 1 : 1;
+                agencias.push({
+                    id: newId,
+                    numero: parseInt(numero),
+                    cooperativa: parseInt(cooperativa),
+                    agencia,
+                    estado,
+                    ip,
+                    valor,
+                    macTotem,
+                    macTvCaixa,
+                    macTvAtm
+                });
+            }
+            
+            localStorage.setItem('agencias', JSON.stringify(agencias));
+            
+            // Fechar o modal e atualizar a interface
+            bootstrap.Modal.getInstance(document.getElementById('agenciaModal')).hide();
+            renderAgencias();
+            updateStats();
+            
+            // Limpar o formulário
+            document.getElementById('agenciaForm').reset();
+            document.getElementById('agenciaId').value = '';
+        });
+        
+        // Resetar o formulário quando o modal for fechado
+        document.getElementById('agenciaModal').addEventListener('hidden.bs.modal', function() {
+            document.getElementById('agenciaForm').reset();
+            document.getElementById('agenciaId').value = '';
+            document.getElementById('agenciaModalLabel').textContent = 'Adicionar Agência';
+        });
+        
+        // Exportar dados (simulação)
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(agencias, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "agencias_export.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        });
+        
+        // Importar dados (simulação)
+        document.getElementById('importBtn').addEventListener('click', function() {
+            // Em uma aplicação real, isso seria mais complexo, envolvendo leitura de arquivo
+            alert("Funcionalidade de importação. Em uma aplicação real, isso permitiria importar um arquivo JSON.");
+        });
+    </script>
+</body>
+</html>
