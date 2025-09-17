@@ -6,6 +6,8 @@
     <title>Activ IP - Gerenciamento de Agências</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -38,6 +40,11 @@
         
         .btn-primary {
             background-color: var(--secondary-color);
+            border: none;
+        }
+        
+        .btn-success {
+            background-color: #27ae60;
             border: none;
         }
         
@@ -136,6 +143,10 @@
         .state-SC { background-color: #2ecc71; }
         .state-MG { background-color: #e74c3c; }
         .state-ES { background-color: #f39c12; }
+        
+        .export-btn {
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -170,9 +181,14 @@
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
                     <h2>Gerenciamento de Agências</h2>
-                    <button class="btn btn-primary d-none d-md-block" data-bs-toggle="modal" data-bs-target="#agencyModal">
-                        <i class="fas fa-plus me-1"></i> Nova Agência
-                    </button>
+                    <div>
+                        <button class="btn btn-success export-btn" id="exportPDF">
+                            <i class="fas fa-file-pdf me-1"></i> Exportar PDF
+                        </button>
+                        <button class="btn btn-primary d-none d-md-block" data-bs-toggle="modal" data-bs-target="#agencyModal">
+                            <i class="fas fa-plus me-1"></i> Nova Agência
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -251,8 +267,13 @@
 
         <!-- Agencies Table -->
         <div class="card" id="agencies">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fas fa-list me-2"></i>Lista de Agências</h5>
+                <div>
+                    <button class="btn btn-sm btn-success" id="exportFilteredPDF">
+                        <i class="fas fa-file-export me-1"></i> Exportar Filtro
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -449,7 +470,7 @@
             { id: 51, numero: 8, cooperativa: 313, agencia: "Redentora - RS", estado: "RS", ip: "10.4.27.233", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
             { id: 52, numero: 24, cooperativa: 313, agencia: "Sagrada Família - RS", estado: "RS", ip: "10.5.183.92", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
             { id: 53, numero: null, cooperativa: 313, agencia: "Felixlandia - MG", estado: "MG", ip: "10.208.163.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
-            { id: 54, numero: 33, cooperativa: 313, agencia: "São Miguel do Oeste Pereri - SC", estado: "SC", ip: "10.16.117.32", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 54, numero: 33, cooperativa: 313, agencia: "São Miguel do Oeste Pereri - SC", estado: "SC", ip: "10.16.117.32", valor: 326, macTotem: "", macTvCaxima: "", macTvAtm: "" },
             { id: 55, numero: 33, cooperativa: 313, agencia: "São Miguel do Oeste Centro - SC", estado: "SC", ip: "10.4.34.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
             { id: 56, numero: 30, cooperativa: 313, agencia: "Três Passos - RS", estado: "RS", ip: "10.5.188.96", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
             { id: 57, numero: 25, cooperativa: 313, agencia: "São José das Missões - RS", estado: "RS", ip: "10.5.184.117", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
@@ -532,9 +553,27 @@
             document.getElementById('filterState').addEventListener('change', filterAgencies);
             document.getElementById('searchAgency').addEventListener('input', filterAgencies);
             document.getElementById('resetFilters').addEventListener('click', resetFilters);
+            document.getElementById('exportPDF').addEventListener('click', exportAllPDF);
+            document.getElementById('exportFilteredPDF').addEventListener('click', exportFilteredPDF);
             
             // Initialize charts
             initCharts(agencies);
+        }
+
+        function getFilteredAgencies() {
+            const coopFilter = document.getElementById('filterCoop').value;
+            const stateFilter = document.getElementById('filterState').value;
+            const searchText = document.getElementById('searchAgency').value.toLowerCase();
+            
+            let agencies = JSON.parse(localStorage.getItem('agencies')) || agenciesData;
+            
+            return agencies.filter(agency => {
+                const matchesCoop = !coopFilter || agency.cooperativa.toString() === coopFilter;
+                const matchesState = !stateFilter || agency.estado === stateFilter;
+                const matchesSearch = !searchText || agency.agencia.toLowerCase().includes(searchText);
+                
+                return matchesCoop && matchesState && matchesSearch;
+            });
         }
 
         function renderAgencies(agencies) {
@@ -563,20 +602,7 @@
         }
 
         function filterAgencies() {
-            const coopFilter = document.getElementById('filterCoop').value;
-            const stateFilter = document.getElementById('filterState').value;
-            const searchText = document.getElementById('searchAgency').value.toLowerCase();
-            
-            let agencies = JSON.parse(localStorage.getItem('agencies')) || agenciesData;
-            
-            const filteredAgencies = agencies.filter(agency => {
-                const matchesCoop = !coopFilter || agency.cooperativa.toString() === coopFilter;
-                const matchesState = !stateFilter || agency.estado === stateFilter;
-                const matchesSearch = !searchText || agency.agencia.toLowerCase().includes(searchText);
-                
-                return matchesCoop && matchesState && matchesSearch;
-            });
-            
+            const filteredAgencies = getFilteredAgencies();
             renderAgencies(filteredAgencies);
         }
 
@@ -758,6 +784,65 @@
                 updateStatistics(agencies);
                 initCharts(agencies);
             }
+        }
+
+        function exportAllPDF() {
+            const agencies = JSON.parse(localStorage.getItem('agencies')) || agenciesData;
+            generatePDF(agencies, "Relatório Completo de Agências");
+        }
+
+        function exportFilteredPDF() {
+            const filteredAgencies = getFilteredAgencies();
+            const coopFilter = document.getElementById('filterCoop').value;
+            const stateFilter = document.getElementById('filterState').value;
+            
+            let title = "Relatório Filtrado de Agências";
+            if (coopFilter) {
+                title += ` - Cooperativa ${coopFilter}`;
+            }
+            if (stateFilter) {
+                title += ` - Estado ${stateFilter}`;
+            }
+            
+            generatePDF(filteredAgencies, title);
+        }
+
+        function generatePDF(agencies, title) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add title
+            doc.setFontSize(16);
+            doc.text(title, 14, 15);
+            doc.setFontSize(10);
+            doc.text(`Data: ${new Date().toLocaleDateString()} - Total: ${agencies.length} agências`, 14, 22);
+            
+            // Prepare data for PDF
+            const tableData = agencies.map(agency => [
+                agency.numero || '',
+                agency.cooperativa,
+                agency.agencia,
+                agency.estado,
+                agency.ip || '',
+                agency.macTotem || '',
+                agency.macTvCaixa || '',
+                agency.macTvAtm || '',
+                `R$ ${agency.valor}`
+            ]);
+            
+            // Create table
+            doc.autoTable({
+                startY: 30,
+                head: [['Número', 'Cooperativa', 'Agência', 'Estado', 'IP', 'MAC Totem', 'MAC TV Caixa', 'MAC TV Atm', 'Valor']],
+                body: tableData,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [44, 62, 80] // Primary color
+                }
+            });
+            
+            // Save PDF
+            doc.save(`${title.toLowerCase().replace(/\s/g, '_')}.pdf`);
         }
     </script>
 </body>
