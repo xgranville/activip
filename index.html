@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Activ IP - Gerenciamento de Agências</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #d32f2f;
+            --secondary-color: #f44336;
+            --accent-color: #b71c1c;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 60px;
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        .navbar {
+            background-color: var(--primary-color);
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 15px 20px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .btn-success {
+            background-color: #27ae60;
+            border: none;
+        }
+        
+        .btn-danger {
+            background-color: var(--accent-color);
+            border: none;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        .agency-table {
+            font-size: 14px;
+            width: 100%;
+        }
+        
+        .agency-table th {
+            background-color: var(--primary-color);
+            color: white;
+            white-space: nowrap;
+            padding: 12px 8px;
+        }
+        
+        .agency-table td {
+            padding: 10px 8px;
+            vertical-align: middle;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+            
+            .agency-table {
+                font-size: 12px;
+            }
+            
+            .agency-table th,
+            .agency-table td {
+                padding: 8px 6px;
+            }
+            
+            .stat-card {
+                margin-bottom: 15px;
+                padding: 12px;
+            }
+            
+            .stat-value {
+                font-size: 20px;
+            }
+            
+            .table-responsive {
+                border: 1px solid #dee2e6;
+                border-radius: 5px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .filter-section .col-md-3,
+            .filter-section .col-md-4,
+            .filter-section .col-md-2 {
+                margin-bottom: 10px;
+            }
+            
+            .modal-dialog {
+                margin: 10px;
+            }
+            
+            .modal-content {
+                font-size: 14px;
+            }
+            
+            .btn {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            body {
+                font-size: 13px;
+            }
+            
+            .agency-table {
+                font-size: 11px;
+            }
+            
+            .agency-table th,
+            .agency-table td {
+                padding: 6px 4px;
+            }
+            
+            .card-header h5 {
+                font-size: 16px;
+            }
+            
+            .stat-value {
+                font-size: 18px;
+            }
+            
+            .btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            
+            .modal-body .row .mb-3 {
+                margin-bottom: 12px !important;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .agency-table {
+                font-size: 10px;
+            }
+            
+            .btn {
+                padding: 5px 8px;
+                font-size: 11px;
+            }
+            
+            .badge {
+                font-size: 10px;
+                padding: 3px 6px;
+            }
+        }
+        
+        /* Suporte para zoom */
+        @media screen and (min-width: 768px) and (max-width: 1024px) {
+            .container {
+                max-width: 95%;
+            }
+            
+            .agency-table {
+                font-size: 13px;
+            }
+        }
+        
+        /* Ajustes para telas muito pequenas */
+        @media screen and (max-width: 320px) {
+            .container {
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+            
+            .navbar-brand {
+                font-size: 16px;
+            }
+            
+            .btn {
+                font-size: 10px;
+                padding: 4px 6px;
+            }
+            
+            .export-btn {
+                margin-left: 5px !important;
+            }
+        }
+        
+        .coop-badge {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .action-buttons .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 12px;
+            margin-right: 5px;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--secondary-color);
+            font-size: 24px;
+        }
+        
+        .filter-section {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .state-badge {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            display: inline-block;
+            min-width: 35px;
+            text-align: center;
+        }
+        
+        .coop-211 { background-color: #d32f2f; }
+        .coop-244 { background-color: #f44336; }
+        .coop-313 { background-color: #b71c1c; }
+        .coop-258 { background-color: #ff6659; }
+        .coop-663 { background-color: #ef5350; }
+        
+        .state-RS { background-color: #d32f2f; }
+        .state-SC { background-color: #f44336; }
+        .state-MG { background-color: #b71c1c; }
+        .state-ES { background-color: #ff6659; }
+        
+        .export-btn {
+            margin-left: 10px;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        .btn-export {
+            background-color: #d32f2f;
+            border: none;
+        }
+        
+        .btn-export:hover {
+            background-color: #b71c1c;
+        }
+        
+        /* Ajustes para tabela responsiva */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Ajustes para formulário em telas pequenas */
+        .modal-body input,
+        .modal-body select {
+            font-size: 16px !important; /* Evita zoom automático no iOS */
+        }
+        
+        /* Ajustes para gráficos responsivos */
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 200px;
+            }
+        }
+        
+        /* Ajustes para layout de estatísticas */
+        .row#stats {
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+        
+        .row#stats > div {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        
+        /* Ajustes para header responsivo */
+        .d-flex.justify-content-between.align-items-center {
+            flex-wrap: wrap;
+        }
+        
+        @media (max-width: 576px) {
+            .d-flex.justify-content-between.align-items-center {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+            
+            .d-flex.justify-content-between.align-items-center > div {
+                margin-top: 10px;
+                width: 100%;
+            }
+            
+            .d-flex.justify-content-between.align-items-center > div .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+        
+        /* Ajustes para filtros em telas pequenas */
+        .filter-section .row {
+            margin-left: -5px;
+            margin-right: -5px;
+        }
+        
+        .filter-section .row > div {
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+        
+        /* Garantir que inputs sejam legíveis em todos os dispositivos */
+        input, select, textarea {
+            min-height: 44px; /* Tamanho mínimo para toque */
+        }
+        
+        /* Ajustes para botões em dispositivos móveis */
+        @media (max-width: 768px) {
+            .btn {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .action-buttons .btn {
+                min-height: 32px;
+                width: 32px;
+            }
+        }
+        
+        /* Ajustes para footer */
+        footer {
+            font-size: 14px;
+            padding: 15px !important;
+        }
+        
+        @media (max-width: 576px) {
+            footer {
+                font-size: 12px;
+                padding: 10px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid px-3 px-md-4">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-network-wired me-2"></i>Activ IP
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-home me-1"></i> Início</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#agencies"><i class="fas fa-building me-1"></i> Agências</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#stats"><i class="fas fa-chart-bar me-1"></i> Estatísticas</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-3 px-md-4 mt-3 mt-md-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2>Gerenciamento de Agências</h2>
+                    <div class="d-flex flex-wrap">
+                        <button class="btn btn-success export-btn mb-2 mb-md-0 me-2" id="exportPDF">
+                            <i class="fas fa-file-pdf me-1"></i> <span class="d-none d-md-inline">Exportar PDF</span>
+                            <span class="d-md-none">PDF</span>
+                        </button>
+                        <button class="btn btn-primary d-none d-md-block" data-bs-toggle="modal" data-bs-target="#agencyModal">
+                            <i class="fas fa-plus me-1"></i> Nova Agência
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="row g-2">
+                <div class="col-12 col-md-3 mb-2 mb-md-0">
+                    <label for="filterCoop" class="form-label">Filtrar por Cooperativa</label>
+                    <select class="form-select" id="filterCoop">
+                        <option value="">Todas</option>
+                        <option value="211">211</option>
+                        <option value="244">244</option>
+                        <option value="313">313</option>
+                        <option value="258">258</option>
+                        <option value="663">663</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3 mb-2 mb-md-0">
+                    <label for="filterState" class="form-label">Filtrar por Estado</label>
+                    <select class="form-select" id="filterState">
+                        <option value="">Todos</option>
+                        <option value="RS">RS</option>
+                        <option value="SC">SC</option>
+                        <option value="MG">MG</option>
+                        <option value="ES">ES</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-2 mb-md-0">
+                    <label for="searchAgency" class="form-label">Buscar Agência</label>
+                    <input type="text" class="form-control" id="searchAgency" placeholder="Digite o nome da agência">
+                </div>
+                <div class="col-12 col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" id="resetFilters">
+                        <i class="fas fa-undo me-1"></i> <span class="d-none d-md-inline">Limpar</span>
+                        <span class="d-md-none">Limpar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4 g-3" id="stats">
+            <div class="col-6 col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total de Agências</h5>
+                        <p class="stat-value" id="total-agencies">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Por Cooperativa</h5>
+                        <p class="stat-value" id="total-cooperatives">5</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Por Estado</h5>
+                        <p class="stat-value" id="total-states">4</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Valor Total</h5>
+                        <p class="stat-value" id="total-value">R$ 0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agencies Table -->
+        <div class="card" id="agencies">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Lista de Agências</h5>
+                <div class="mt-2 mt-md-0">
+                    <button class="btn btn-sm btn-export text-white" id="exportFilteredPDF">
+                        <i class="fas fa-file-export me-1"></i> <span class="d-none d-md-inline">Exportar Filtro</span>
+                        <span class="d-md-none">Exportar</span>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-2 p-md-3">
+                <div class="table-responsive">
+                    <table class="table table-hover agency-table">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Cooperativa</th>
+                                <th>Agência</th>
+                                <th>Estado</th>
+                                <th>IP</th>
+                                <th>MAC Totem</th>
+                                <th>MAC TV Caixa</th>
+                                <th>MAC TV Atm</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agencies-list">
+                            <!-- Agencies will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- State Statistics -->
+        <div class="row mt-4 g-3">
+            <div class="col-12 col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Agências por Estado</h5>
+                    </div>
+                    <div class="card-body p-2 p-md-3">
+                        <div class="chart-container">
+                            <canvas id="stateChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Valores por Cooperativa</h5>
+                    </div>
+                    <div class="card-body p-2 p-md-3">
+                        <div class="chart-container">
+                            <canvas id="coopChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button for Mobile -->
+    <button class="btn btn-primary floating-btn d-md-none" data-bs-toggle="modal" data-bs-target="#agencyModal">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Agency Modal -->
+    <div class="modal fade" id="agencyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Adicionar Agência</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="agencyForm">
+                        <input type="hidden" id="agencyId">
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="numero" class="form-label">Número</label>
+                                <input type="number" class="form-control" id="numero">
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="cooperativa" class="form-label">Cooperativa</label>
+                                <select class="form-select" id="cooperativa" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="211">211</option>
+                                    <option value="244">244</option>
+                                    <option value="313">313</option>
+                                    <option value="258">258</option>
+                                    <option value="663">663</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 col-md-8 mb-3">
+                                <label for="agencia" class="form-label">Agência</label>
+                                <input type="text" class="form-control" id="agencia" required>
+                            </div>
+                            <div class="col-12 col-md-4 mb-3">
+                                <label for="estado" class="form-label">Estado (UF)</label>
+                                <select class="form-select" id="estado" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="RS">RS</option>
+                                    <option value="SC">SC</option>
+                                    <option value="MG">MG</option>
+                                    <option value="ES">ES</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="ip" class="form-label">IP</label>
+                                <input type="text" class="form-control" id="ip">
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="valor" class="form-label">Valor</label>
+                                <input type="number" class="form-control" id="valor" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 col-md-4 mb-3">
+                                <label for="macTotem" class="form-label">MAC Totem</label>
+                                <input type="text" class="form-control" id="macTotem" placeholder="Ex: 00:1A:2B:3C:4D:5E">
+                            </div>
+                            <div class="col-12 col-md-4 mb-3">
+                                <label for="macTvCaixa" class="form-label">MAC TV Caixa</label>
+                                <input type="text" class="form-control" id="macTvCaixa" placeholder="Ex: 00:1A:2B:3C:4D:5E">
+                            </div>
+                            <div class="col-12 col-md-4 mb-3">
+                                <label for="macTvAtm" class="form-label">MAC TV Atm</label>
+                                <input type="text" class="form-control" id="macTvAtm" placeholder="Ex: 00:1A:2B:3C:4D:5E">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveAgency">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p class="mb-0">Activ IP - Sistema de Gerenciamento de Agências © 2023</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Sample data from the Excel file with all 113 agencies
+        const agenciesData = [
+            { id: 1, numero: 8, cooperativa: 211, agencia: "Almirante Tamandaré - RS", estado: "RS", ip: "10.3.142.83", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 2, numero: 5, cooperativa: 211, agencia: "Carazinho - RS", estado: "RS", ip: "10.1.43.66", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 3, numero: 9, cooperativa: 211, agencia: "Carazinho Sul - RS", estado: "RS", ip: "10.3.144.50", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 4, numero: 7, cooperativa: 211, agencia: "Coqueiros do Sul - RS", estado: "RS", ip: "10.3.141.76", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 5, numero: 4, cooperativa: 211, agencia: "NMT Centro - RS", estado: "RS", ip: "10.3.135.54", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 6, numero: 10, cooperativa: 211, agencia: "NMT Oeste - RS", estado: "RS", ip: "10.1.130.118", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 7, numero: 13, cooperativa: 211, agencia: "Pouso Redondo - SC", estado: "SC", ip: "10.16.98.38", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 8, numero: 12, cooperativa: 211, agencia: "Presidente Getúlio - SC", estado: "SC", ip: "10.16.85.120", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 9, numero: 6, cooperativa: 211, agencia: "Sto Antônio do Planalto - RS", estado: "RS", ip: "10.3.140.91", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 10, numero: 14, cooperativa: 211, agencia: "Taió - SC", estado: "SC", ip: "10.16.115.21", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 11, numero: 3, cooperativa: 211, agencia: "Tio Hugo - RS", estado: "RS", ip: "10.3.138.88", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 12, numero: 2, cooperativa: 211, agencia: "Victor Graeff - RS", estado: "RS", ip: "10.3.137.101", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 13, numero: 16, cooperativa: 211, agencia: "Witmarsun - SC", estado: "SC", ip: "10.16.127.58", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 14, numero: 17, cooperativa: 211, agencia: "Otacílio Costa - RS", estado: "RS", ip: "10.16.133.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 15, numero: 18, cooperativa: 211, agencia: "Agrolandia - SC", estado: "SC", ip: "10.16.143.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 16, numero: 19, cooperativa: 211, agencia: "Santa Cecília - RS", estado: "RS", ip: "10.16.154.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 17, numero: null, cooperativa: 211, agencia: "Ibirama - SC", estado: "SC", ip: "10.16.199.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 18, numero: null, cooperativa: 211, agencia: "Salete - SC", estado: "SC", ip: "", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 19, numero: null, cooperativa: 211, agencia: "Itambacuri - MG", estado: "MG", ip: "", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 20, numero: 21, cooperativa: 211, agencia: "Rio Do Oeste - RS", estado: "RS", ip: "10.96.114.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 21, numero: null, cooperativa: 211, agencia: "Teófio Ottoni - MG", estado: "MG", ip: "10.208.177.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 22, numero: 6, cooperativa: 244, agencia: "Colorado - RS", estado: "RS", ip: "10.4.90.96", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 23, numero: 8, cooperativa: 244, agencia: "Ibirubá - RS", estado: "RS", ip: "10.5.75.69", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 24, numero: 9, cooperativa: 244, agencia: "Ibirubá Mauá - RS", estado: "RS", ip: "10.2.22.116", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 25, numero: 12, cooperativa: 244, agencia: "Lagoa Formosa - MG", estado: "MG", ip: "10.208.38.49", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 26, numero: 11, cooperativa: 244, agencia: "Lagoa Grande - MG", estado: "MG", ip: "10.208.33.52", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 27, numero: 10, cooperativa: 244, agencia: "Patos de Minas - MG", estado: "MG", ip: "10.208.22.122", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 28, numero: 2, cooperativa: 244, agencia: "Selbach - RS", estado: "RS", ip: "10.6.156.91", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 29, numero: 4, cooperativa: 244, agencia: "Tapera - RS", estado: "RS", ip: "10.6.155.112", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 30, numero: 7, cooperativa: 244, agencia: "Vista Alegre - RS", estado: "RS", ip: "10.4.91.246", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 31, numero: 5, cooperativa: 244, agencia: "XV de Novembro - RS", estado: "RS", ip: "10.5.76.84", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 32, numero: 13, cooperativa: 244, agencia: "Pres. Olegário - MG", estado: "MG", ip: "10.208.62.73", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 33, numero: 12, cooperativa: 244, agencia: "João Pinheiro - MG", estado: "MG", ip: "10.2.97.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 34, numero: 15, cooperativa: 244, agencia: "Carmo do Paranaíba - MG", estado: "MG", ip: "10.2.99.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 35, numero: 16, cooperativa: 244, agencia: "Cabeceira Grande - MG", estado: "MG", ip: "10.208.84.26", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 36, numero: 17, cooperativa: 244, agencia: "Vazante - MG", estado: "MG", ip: "10.5.88.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 37, numero: 18, cooperativa: 244, agencia: "Lagamar - MG", estado: "MG", ip: "10.2.90.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 38, numero: 3, cooperativa: 244, agencia: "Lagoa dos Tres Cantos - RS", estado: "RS", ip: "10.6.157.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 39, numero: 24, cooperativa: 244, agencia: "São Gonçalo - MG", estado: "MG", ip: "", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 40, numero: null, cooperativa: 244, agencia: "Guimarânia - MG", estado: "MG", ip: "", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 41, numero: null, cooperativa: 244, agencia: "Tiros - MG", estado: "MG", ip: "", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 42, numero: 22, cooperativa: 244, agencia: "São Gottardo - MG", estado: "MG", ip: "", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 43, numero: 36, cooperativa: 313, agencia: "Curvelo - MG", estado: "MG", ip: "10.208.103.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 44, numero: 28, cooperativa: 313, agencia: "Tres Passos - Costa e Silva - RS", estado: "RS", ip: "10.5.186.78", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 45, numero: 4, cooperativa: 313, agencia: "Campo Novo - RS", estado: "RS", ip: "10.4.24.230", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 46, numero: 22, cooperativa: 313, agencia: "Itapiranga - RS", estado: "RS", ip: "10.5.181.100", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 47, numero: 27, cooperativa: 313, agencia: "Mondai - RS", estado: "RS", ip: "10.5.185.101", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 48, numero: 23, cooperativa: 313, agencia: "Novo Barreiro - RS", estado: "RS", ip: "10.5.182.114", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 49, numero: 31, cooperativa: 313, agencia: "Palmeira Empresarial - RS", estado: "RS", ip: "10.2.44.123", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 50, numero: 11, cooperativa: 313, agencia: "Palmeira das Missões - RS", estado: "RS", ip: "10.5.180.61", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 51, numero: 8, cooperativa: 313, agencia: "Redentora - RS", estado: "RS", ip: "10.4.27.233", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 52, numero: 24, cooperativa: 313, agencia: "Sagrada Família - RS", estado: "RS", ip: "10.5.183.92", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 53, numero: null, cooperativa: 313, agencia: "Felixlandia - MG", estado: "MG", ip: "10.208.163.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 54, numero: 33, cooperativa: 313, agencia: "São Miguel do Oeste Pereri - SC", estado: "SC", ip: "10.16.117.32", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 55, numero: 33, cooperativa: 313, agencia: "São Miguel do Oeste Centro - SC", estado: "SC", ip: "10.4.34.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 56, numero: 30, cooperativa: 313, agencia: "Três Passos - RS", estado: "RS", ip: "10.5.188.96", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 57, numero: 25, cooperativa: 313, agencia: "São José das Missões - RS", estado: "RS", ip: "10.5.184.117", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 58, numero: 32, cooperativa: 313, agencia: "Tunápolis - SC", estado: "SC", ip: "10.16.120.39", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 59, numero: 16, cooperativa: 313, agencia: "Iporã do Oeste - SC", estado: "SC", ip: "10.4.35.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 60, numero: 9, cooperativa: 313, agencia: "Tenente Portela - RS", estado: "RS", ip: "10.4.28.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 61, numero: 12, cooperativa: 313, agencia: "Esperança do Sul - RS", estado: "RS", ip: "10.4.31.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 62, numero: 34, cooperativa: 313, agencia: "Bocaiúva - MG", estado: "MG", ip: "10.208.87.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 63, numero: 35, cooperativa: 313, agencia: "Olhos d'água - MG", estado: "MG", ip: "10.208.38.49", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 64, numero: 2, cooperativa: 313, agencia: "São Martinho - RS", estado: "RS", ip: "10.4.22.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 65, numero: 37, cooperativa: 313, agencia: "Joaquim Felicio - MG", estado: "MG", ip: "10.208.102.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 66, numero: 19, cooperativa: 313, agencia: "São João do Oeste - RS", estado: "RS", ip: "10.240.34.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 67, numero: 37, cooperativa: 313, agencia: "Miraguaí - RS", estado: "RS", ip: "10.4.32.25", valor: 326, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 68, numero: 25, cooperativa: 663, agencia: "Pinheiros - ES", estado: "ES", ip: "19.88.22.26", valor: 297, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 69, numero: 0, cooperativa: 663, agencia: "Linhares Conceição - ES", estado: "ES", ip: "10.1.115.25", valor: 297, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 70, numero: 24, cooperativa: 663, agencia: "Linhares - ES", estado: "ES", ip: "10.88.21.25", valor: 297, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 71, numero: 27, cooperativa: 663, agencia: "Aracruz - ES", estado: "ES", ip: "10.88.2.25", valor: 297, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 72, numero: 0, cooperativa: 663, agencia: "São Mateus - ES", estado: "ES", ip: "10.88.37.25", valor: 297, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 73, numero: 29, cooperativa: 663, agencia: "Jaguaré - ES", estado: "ES", ip: "10.88.9.25", valor: 297, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 74, numero: 0, cooperativa: 663, agencia: "Montanha - ES", estado: "ES", ip: "", valor: 297, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 75, numero: 0, cooperativa: 663, agencia: "Rio Bananal - ES", estado: "ES", ip: "", valor: 297, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 76, numero: 0, cooperativa: 663, agencia: "Sooretama - ES", estado: "ES", ip: "", valor: 297, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 77, numero: 30, cooperativa: 258, agencia: "Lagoa Santa - MG", estado: "MG", ip: "10.208.72.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 78, numero: 32, cooperativa: 258, agencia: "Pedro Leopoldo - MG", estado: "MG", ip: "10.208.78.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 79, numero: 34, cooperativa: 258, agencia: "Para de Minas São Chico - MG", estado: "MG", ip: "10.208.125.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 80, numero: 29, cooperativa: 258, agencia: "Sete Lagos Canaã - MG", estado: "MG", ip: "10.208.68.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 81, numero: null, cooperativa: 258, agencia: "Sete Lagoas Superior - MG", estado: "MG", ip: "10.208.222.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 82, numero: 27, cooperativa: 258, agencia: "Sete Lagoas Centro - MG", estado: "MG", ip: "10.208.15.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 83, numero: 0, cooperativa: 258, agencia: "Barra Funda - RS", estado: "RS", ip: "10.6.107.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 84, numero: 0, cooperativa: 258, agencia: "Ronda Alta - RS", estado: "RS", ip: "10.6.97.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 85, numero: 0, cooperativa: 258, agencia: "Rondinha - RS", estado: "RS", ip: "10.6.105.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 86, numero: 10, cooperativa: 258, agencia: "Trindade do Sul - RS", estado: "RS", ip: "", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 87, numero: 10, cooperativa: 258, agencia: "Sarandi Centro Terreo - RS", estado: "RS", ip: "10.6.95.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 88, numero: 0, cooperativa: 258, agencia: "Funilândia - MG", estado: "MG", ip: "10.208.130.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 89, numero: 33, cooperativa: 258, agencia: "Matozinhos - MG", estado: "MG", ip: "10.208.109.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 90, numero: 0, cooperativa: 258, agencia: "Chapecó Palmital - SC", estado: "SC", ip: "10.6.83.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 91, numero: 0, cooperativa: 258, agencia: "Chapecó Santa Maria - SC", estado: "SC", ip: "10.6.113.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 92, numero: null, cooperativa: 258, agencia: "Chapecó São Cristóvão - SC", estado: "SC", ip: "", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 93, numero: 0, cooperativa: 258, agencia: "Chapecó Empresarial - SC", estado: "SC", ip: "10.6.114.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 94, numero: 0, cooperativa: 258, agencia: "Chapecó EFAPI - SC", estado: "SC", ip: "10.1.27.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 95, numero: 0, cooperativa: 258, agencia: "Nova Boa Vista - RS", estado: "RS", ip: "10.5.182.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 96, numero: 0, cooperativa: 258, agencia: "Chapecó Passo dos Fortes - SC", estado: "SC", ip: "10.16.106.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 97, numero: 0, cooperativa: 258, agencia: "Xanxere - SC", estado: "SC", ip: "10.6.95.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 98, numero: 0, cooperativa: 258, agencia: "Guatambu - SC", estado: "SC", ip: "10.16.171.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 99, numero: null, cooperativa: 258, agencia: "Constantina - RS", estado: "RS", ip: "10.6.96.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 100, numero: null, cooperativa: 258, agencia: "NovoXingu - RS", estado: "RS", ip: "10.6.108.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 101, numero: null, cooperativa: 258, agencia: "Gramado dos Loureiros - RS", estado: "RS", ip: "10.6.109.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 102, numero: null, cooperativa: 258, agencia: "Engenho Velho - RS", estado: "RS", ip: "10.6.104.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 103, numero: 0, cooperativa: 258, agencia: "Coronel Freitas - SC", estado: "SC", ip: "10.6.177.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 104, numero: 0, cooperativa: 258, agencia: "Xaxim - SC", estado: "SC", ip: "10.4.97.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 105, numero: null, cooperativa: 258, agencia: "Para de Minas Centro - MG", estado: "MG", ip: "10.208.183.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 106, numero: null, cooperativa: 258, agencia: "Nonoai - RS", estado: "RS", ip: "10.6.99.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 107, numero: null, cooperativa: 258, agencia: "Tres Palmeiras - RS", estado: "RS", ip: "10.6.101.25", valor: 329, macTotem: "", macTvCaxima: "", macTvAtm: "" },
+            { id: 108, numero: null, cooperativa: 258, agencia: "Nova Erechim - SC", estado: "SC", ip: "", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 109, numero: null, cooperativa: 258, agencia: "Sarandi Vila Maria - RS", estado: "RS", ip: "", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 110, numero: null, cooperativa: 258, agencia: "Cordilheira Alta - SC", estado: "SC", ip: "10.16.208.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 111, numero: null, cooperativa: 258, agencia: "Sarandi Empresarial - SC", estado: "RS", ip: "", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 112, numero: null, cooperativa: 258, agencia: "Liberato Salzano - RS", estado: "RS", ip: "10.6.102.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" },
+            { id: 113, numero: null, cooperativa: 258, agencia: "Rio dos Indios - RS", estado: "RS", ip: "10.6.198.25", valor: 329, macTotem: "", macTvCaixa: "", macTvAtm: "" }
+        ];
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+        });
+
+        function initApp() {
+            // Load data from localStorage or use sample data
+            let agencies = JSON.parse(localStorage.getItem('agencies')) || agenciesData;
+            
+            // Render agencies
+            renderAgencies(agencies);
+            
+            // Update statistics
+            updateStatistics(agencies);
+            
+            // Setup event listeners
+            document.getElementById('saveAgency').addEventListener('click', saveAgency);
+            document.getElementById('filterCoop').addEventListener('change', filterAgencies);
+            document.getElementById('filterState').addEventListener('change', filterAgencies);
+            document.getElementById('searchAgency').addEventListener('input', filterAgencies);
+            document.getElementById('resetFilters').addEventListener('click', resetFilters);
+            document.getElementById('exportPDF').addEventListener('click', exportAllPDF);
+            document.getElementById('exportFilteredPDF').addEventListener('click', exportFilteredPDF);
+            
+            // Initialize charts
+            initCharts(agencies);
+        }
+
+        function getFilteredAgencies() {
+            const coopFilter = document.getElementById('filterCoop').value;
+            const stateFilter = document.getElementById('filterState').value;
+            const searchText = document.getElementById('searchAgency').value.toLowerCase();
+            
+            let agencies = JSON.parse(localStorage.getItem('agencies')) || agenciesData;
+            
+            return agencies.filter(agency => {
+                const matchesCoop = !coopFilter || agency.cooperativa.toString() === coopFilter;
+                const matchesState = !stateFilter || agency.estado === stateFilter;
+                const matchesSearch = !searchText || agency.agencia.toLowerCase().includes(searchText);
+                
+                return matchesCoop && matchesState && matchesSearch;
+            });
+        }
+
+        function renderAgencies(agencies) {
+            const tbody = document.getElementById('agencies-list');
+            tbody.innerHTML = '';
+            
+            agencies.forEach(agency => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${agency.numero || '-'}</td>
+                    <td><span class="badge coop-badge coop-${agency.cooperativa}">${agency.cooperativa}</span></td>
+                    <td>${agency.agencia}</td>
+                    <td><span class="badge state-badge state-${agency.estado}">${agency.estado}</span></td>
+                    <td>${agency.ip || '-'}</td>
+                    <td>${agency.macTotem || '-'}</td>
+                    <td>${agency.macTvCaixa || '-'}</td>
+                    <td>${agency.macTvAtm || '-'}</td>
+                    <td>R$ ${agency.valor}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-info" onclick="editAgency(${agency.id})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteAgency(${agency.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterAgencies() {
+            const filteredAgencies = getFilteredAgencies();
+            renderAgencies(filteredAgencies);
+        }
+
+        function resetFilters() {
+            document.getElementById('filterCoop').value = '';
+            document.getElementById('filterState').value = '';
+            document.getElementById('searchAgency').value = '';
+            
+            let agencies = JSON.parse(localStorage.getItem('agencies')) || agenciesData;
+            renderAgencies(agencies);
+        }
+
+        function updateStatistics(agencies) {
+            // Total agencies
+            document.getElementById('total-agencies').textContent = agencies.length;
+            
+            // Total cooperatives
+            const cooperatives = new Set(agencies.map(a => a.cooperativa));
+            document.getElementById('total-cooperatives').textContent = cooperatives.size;
+            
+            // Total states
+            const states = new Set(agencies.map(a => a.estado));
+            document.getElementById('total-states').textContent = states.size;
+            
+            // Total value
+            const totalValue = agencies.reduce((sum, agency) => sum + agency.valor, 0);
+            document.getElementById('total-value').textContent = `R$ ${totalValue.toLocaleString()}`;
+        }
+
+        function initCharts(agencies) {
+            // Agencies by state
+            const stateCounts = {};
+            agencies.forEach(agency => {
+                stateCounts[agency.estado] = (stateCounts[agency.estado] || 0) + 1;
+            });
+            
+            const stateChart = new Chart(document.getElementById('stateChart'), {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(stateCounts),
+                    datasets: [{
+                        data: Object.values(stateCounts),
+                        backgroundColor: ['#d32f2f', '#f44336', '#b71c1c', '#ff6659', '#ef5350']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribuição por Estado'
+                        }
+                    }
+                }
+            });
+            
+            // Values by cooperative
+            const coopSums = {};
+            agencies.forEach(agency => {
+                coopSums[agency.cooperativa] = (coopSums[agency.cooperativa] || 0) + agency.valor;
+            });
+            
+            const coopChart = new Chart(document.getElementById('coopChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(coopSums),
+                    datasets: [{
+                        label: 'Valor Total',
+                        data: Object.values(coopSums),
+                        backgroundColor: '#d32f2f'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Valor por Cooperativa'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function saveAgency() {
+            const form = document.getElementById('agencyForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const agencies = JSON.parse(localStorage.getItem('agencies')) || agenciesData;
+            const agencyId = document.getElementById('agencyId').value;
+            
+            const agency = {
+                id: agencyId ? parseInt(agencyId) : Math.max(...agencies.map(a => a.id), 0) + 1,
+                numero: document.getElementById('numero').value ? parseInt(document.getElementById('numero').value) : null,
+                cooperativa: parseInt(document.getElementById('cooperativa').value),
+                agencia: document.getElementById('agencia').value,
+                estado: document.getElementById('estado').value,
+                ip: document.getElementById('ip').value,
+                valor: parseInt(document.getElementById('valor').value),
+                macTotem: document.getElementById('macTotem').value,
+                macTvCaixa: document.getElementById('macTvCaixa').value,
+                macTvAtm: document.getElementById('macTvAtm').value
+            };
+            
+            if (agencyId) {
+                // Update existing agency
+                const index = agencies.findIndex(a => a.id === parseInt(agencyId));
+                if (index !== -1) {
+                    agencies[index] = agency;
+                }
+            } else {
+                // Add new agency
+                agencies.push(agency);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('agencies', JSON.stringify(agencies));
+            
+            // Update UI
+            renderAgencies(agencies);
+            updateStatistics(agencies);
+            initCharts(agencies);
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('agencyModal')).hide();
+            
+            // Reset form
+            document.getElementById('agencyForm').reset();
+            document.getElementById('agencyId').value = '';
+        }
+
+        function editAgency(id) {
+            const agencies = JSON.parse(localStorage.getItem('agencies')) || agenciesData;
+            const agency = agencies.find(a => a.id === id);
+            
+            if (agency) {
+                document.getElementById('agencyId').value = agency.id;
+                document.getElementById('numero').value = agency.numero || '';
+                document.getElementById('cooperativa').value = agency.cooperativa;
+                document.getElementById('agencia').value = agency.agencia;
+                document.getElementById('estado').value = agency.estado;
+                document.getElementById('ip').value = agency.ip || '';
+                document.getElementById('valor').value = agency.valor;
+                document.getElementById('macTotem').value = agency.macTotem || '';
+                document.getElementById('macTvCaixa').value = agency.macTvCaixa || '';
+                document.getElementById('macTvAtm').value = agency.macTvAtm || '';
+                
+                document.getElementById('modalTitle').textContent = 'Editar Agência';
+                
+                const modal = new bootstrap.Modal(document.getElementById('agencyModal'));
+                modal.show();
+            }
+        }
+
+        function deleteAgency(id) {
+            if (confirm('Tem certeza que deseja excluir esta agência?')) {
+                let agencies = JSON.parse(localStorage.getItem('agencies')) || agenciesData;
+                agencies = agencies.filter(a => a.id !== id);
+                
+                // Save to localStorage
+                localStorage.setItem('agencies', JSON.stringify(agencies));
+                
+                // Update UI
+                renderAgencies(agencies);
+                updateStatistics(agencies);
+                initCharts(agencies);
+            }
+        }
+
+        function exportAllPDF() {
+            const agencies = JSON.parse(localStorage.getItem('agencies')) || agenciesData;
+            generatePDF(agencies, "Relatório Completo de Agências");
+        }
+
+        function exportFilteredPDF() {
+            const filteredAgencies = getFilteredAgencies();
+            const coopFilter = document.getElementById('filterCoop').value;
+            const stateFilter = document.getElementById('filterState').value;
+            
+            let title = "Relatório Filtrado de Agências";
+            if (coopFilter) {
+                title += ` - Cooperativa ${coopFilter}`;
+            }
+            if (stateFilter) {
+                title += ` - Estado ${stateFilter}`;
+            }
+            
+            generatePDF(filteredAgencies, title);
+        }
+
+        function generatePDF(agencies, title) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add title
+            doc.setFontSize(16);
+            doc.text(title, 14, 15);
+            doc.setFontSize(10);
+            doc.text(`Data: ${new Date().toLocaleDateString()} - Total: ${agencies.length} agências`, 14, 22);
+            
+            // Prepare data for PDF - sem a coluna de valor
+            const tableData = agencies.map(agency => [
+                agency.numero || '',
+                agency.cooperativa,
+                agency.agencia,
+                agency.estado,
+                agency.ip || '',
+                agency.macTotem || '',
+                agency.macTvCaixa || '',
+                agency.macTvAtm || ''
+            ]);
+            
+            // Create table
+            doc.autoTable({
+                startY: 30,
+                head: [['Número', 'Cooperativa', 'Agência', 'Estado', 'IP', 'MAC Totem', 'MAC TV Caixa', 'MAC TV Atm']],
+                body: tableData,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [211, 47, 47] // Primary color
+                }
+            });
+            
+            // Save PDF
+            doc.save(`${title.toLowerCase().replace(/\s/g, '_')}.pdf`);
+        }
+    </script>
+</body>
+</html>
